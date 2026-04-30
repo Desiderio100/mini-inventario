@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  api:
+    build: ./api
+    expose:
+      - "3000"
+    environment:
+      - DB_HOST=mysql
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=inventario
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
