@@ -1,32 +1,44 @@
 name: CI Pipeline
 on: [push]
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventario
-        ports:
-          - 3306:3306
     steps:
       - uses: actions/checkout@v3
-      - name: Build and Run
-        run: docker-compose up -d --build
-      - name: Check API
+      
+      - name: Set up Docker
+        run: |
+          docker --version
+          docker-compose --version
+      
+      - name: Build and Run containers
+        run: |
+          docker-compose up -d --build
+          docker ps
+      
+      - name: Wait for services and Check API health
         run: |
           # Espera inicial para que los contenedores arranquen
-          sleep 30
-          # Reintentar la comprobación hasta que responda (12 intentos x 5s = 60s)
-          for i in {1..12}; do
-            if curl --silent --fail http://localhost:3000/health; then
-              echo "API disponible"
-              exit 0
+          sleep 20
+          # Reintentar la comprobación hasta que responda (20 intentos x 5s = 100s)
+          for i in {1..20}; do
+            echo "Intento $i: verificando API..."
+            if docker-compose exec -T api curl --silent --fail http://localhost:3000/health > /dev/null 2>&1; then
+              echo "✓ API disponible en /health"
+              break
             fi
-            echo "Intento $i: API no disponible todavía, esperando..."
+            if [ $i -eq 20 ]; then
+              echo "✗ La API no respondió después de 20 intentos"
+              docker-compose logs
+              exit 1
+            fi
             sleep 5
           done
-          echo "La comprobación de la API falló después de varios intentos"
-          exit 1
+      
+      - name: Verificar endpoint GET /productos
+        run: |
+          docker-compose exec -T api curl --silent http://localhost:3000/productos | grep -q "Teclado" && echo "✓ GET /productos funciona" || exit 1
+      
+      - name: Show logs on failure
+        if: failure()
+        run: docker-compose logs
