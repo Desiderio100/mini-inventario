@@ -17,5 +17,16 @@ jobs:
         run: docker-compose up -d --build
       - name: Check API
         run: |
-          sleep 20
-          curl http://localhost:3000/health
+          # Espera inicial para que los contenedores arranquen
+          sleep 30
+          # Reintentar la comprobación hasta que responda (12 intentos x 5s = 60s)
+          for i in {1..12}; do
+            if curl --silent --fail http://localhost:3000/health; then
+              echo "API disponible"
+              exit 0
+            fi
+            echo "Intento $i: API no disponible todavía, esperando..."
+            sleep 5
+          done
+          echo "La comprobación de la API falló después de varios intentos"
+          exit 1
