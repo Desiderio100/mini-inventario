@@ -8,6 +8,10 @@ services:
       - DB_HOST=mysql
     depends_on:
       - mysql
+    networks:
+      - default
+      - dokploy-network
+
   mysql:
     image: mysql:8.0
     environment:
@@ -15,3 +19,10 @@ services:
       - MYSQL_DATABASE=inventario
     volumes:
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - default
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
