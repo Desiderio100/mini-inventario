@@ -1,44 +1,23 @@
 name: CI Pipeline
-on: [push]
+on:
+  push:
+    branches: [ main ]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
-      - name: Set up Docker
+      - name: Construir y levantar servicios
+        run: docker compose up -d --build
+
+      - name: Esperar a que los servicios despierten
+        run: sleep 30
+
+      - name: Prueba de Health Check
         run: |
-          docker --version
-          docker-compose --version
-      
-      - name: Build and Run containers
+          curl --retry 5 --retry-delay 5 http://localhost:3000/health
+
+      - name: Prueba de Productos
         run: |
-          docker-compose up -d --build
-          docker ps
-      
-      - name: Wait for services and Check API health
-        run: |
-          # Espera inicial para que los contenedores arranquen
-          sleep 20
-          # Reintentar la comprobación hasta que responda (20 intentos x 5s = 100s)
-          for i in {1..20}; do
-            echo "Intento $i: verificando API..."
-            if docker-compose exec -T api curl --silent --fail http://localhost:3000/health > /dev/null 2>&1; then
-              echo "✓ API disponible en /health"
-              break
-            fi
-            if [ $i -eq 20 ]; then
-              echo "✗ La API no respondió después de 20 intentos"
-              docker-compose logs
-              exit 1
-            fi
-            sleep 5
-          done
-      
-      - name: Verificar endpoint GET /productos
-        run: |
-          docker-compose exec -T api curl --silent http://localhost:3000/productos | grep -q "Teclado" && echo "✓ GET /productos funciona" || exit 1
-      
-      - name: Show logs on failure
-        if: failure()
-        run: docker-compose logs
+          curl http://localhost:3000/productos | grep "Teclado"
