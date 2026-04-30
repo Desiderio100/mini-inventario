@@ -1,0 +1,1 @@
+[![CI Pipeline](https://github.com/Desiderio100/mini-inventario/actions/workflows/ci.yml/badge.svg)](https://github.com/Desiderio100/mini-inventario/actions/workflows/ci.yml) 
