@@ -19,7 +19,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'mini-inventario-api' });
 });
 
-// GET /productos - RESUELTO
+// GET /productos
 app.get('/productos', async (req, res) => {
   try {
     const conn = await getConnection();
@@ -31,7 +31,7 @@ app.get('/productos', async (req, res) => {
   }
 });
 
-// GET /productos/:id - añadido
+// GET /productos/:id
 app.get('/productos/:id', async (req, res) => {
   try {
     const conn = await getConnection();
@@ -44,7 +44,7 @@ app.get('/productos/:id', async (req, res) => {
   }
 });
 
-// POST /productos - RESUELTO
+// POST /productos
 app.post('/productos', async (req, res) => {
   const { nombre, cantidad, precio } = req.body;
   if (!nombre || !cantidad || !precio) {
@@ -63,7 +63,7 @@ app.post('/productos', async (req, res) => {
   }
 });
 
-// PUT /productos/:id/stock - añadido
+// PUT /productos/:id/stock
 app.put('/productos/:id/stock', async (req, res) => {
   const { cantidad } = req.body;
   try {
@@ -77,7 +77,7 @@ app.put('/productos/:id/stock', async (req, res) => {
   }
 });
 
-// DELETE /productos/:id - añadido
+// DELETE /productos/:id
 app.delete('/productos/:id', async (req, res) => {
   try {
     const conn = await getConnection();
